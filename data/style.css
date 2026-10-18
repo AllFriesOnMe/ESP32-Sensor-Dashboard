@@ -1,0 +1,52 @@
+body {
+    background-color: #111;
+    color: white;
+    padding: 20px;
+
+    font-family: "Comic Sans MS", "Comic Sans", cursive, sans-serif;
+}
+
+h1 {
+    font-size: 45px;
+}
+
+h2 {
+    font-size: 40px;
+}
+
+/* distance card */
+.card-1 {
+    background-color: #5f5f5f;
+
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 24px;
+}
+
+/* gyro and accel cards */
+
+.card-2 {
+    background-color: #5f5f5f;
+
+    padding: 20px;
+    border-radius: 12px;
+}
+
+.sensor-value {
+    font-size: 32px;
+    font-weight: bold;
+}
+
+/* accelerometer and gyroscope container */
+
+.sensor-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+@media (max-width: 600px) {
+    .sensor-grid {
+        grid-template-columns: 1fr;
+    }
+}

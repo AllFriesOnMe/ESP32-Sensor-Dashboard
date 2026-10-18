@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+  <title>ESP32 Sensor Dashboard</title>
+
+  <link rel="stylesheet" href="/style.css">
+</head>
+
+<body>
+
+  <h1>ESP32 Sensor Dashboard</h1>
+
+  <div class="card-1">
+    <h2>Distance</h2>
+
+    <p class="sensor-value">
+        <span id="distance">---</span> mm
+    </p>
+  </div>
+
+  <div class="sensor-grid">
+    <div class="card-2">
+        <h2>Accelerometer</h2>
+        <p class="sensor-value">
+            X: <span id="accelX">---</span> g
+        </p>
+        <p class="sensor-value">
+            Y: <span id="accelY">---</span> g
+        </p>
+        <p class="sensor-value">
+            Z: <span id="accelZ">---</span> g
+        </p>
+    </div>
+
+    <div class="card-2">
+        <h2>Gyroscope</h2>
+        <p class="sensor-value">
+            X: <span id="gyroX">---</span> deg/s
+        </p>
+        <p class="sensor-value">
+            Y: <span id="gyroY">---</span> deg/s
+        </p>
+        <p class="sensor-value">
+            Z: <span id="gyroZ">---</span> deg/s
+        </p>
+    </div>
+  </div>
+
+  <script>
+
+    function updateData() {
+
+      fetch("/data")
+
+        .then(response => response.json())
+
+        .then(data => {
+
+          document.getElementById("distance").innerHTML =
+            data.distance;
+
+          document.getElementById("accelX").innerHTML =
+            data.accelX.toFixed(2);
+
+          document.getElementById("accelY").innerHTML =
+            data.accelY.toFixed(2);
+
+          document.getElementById("accelZ").innerHTML =
+            data.accelZ.toFixed(2);
+
+          document.getElementById("gyroX").innerHTML =
+            data.gyroX.toFixed(2);
+
+          document.getElementById("gyroY").innerHTML =
+            data.gyroY.toFixed(2);
+
+          document.getElementById("gyroZ").innerHTML =
+            data.gyroZ.toFixed(2);
+
+        });
+
+    }
+
+    setInterval(updateData, 250);
+
+    updateData();
+
+  </script>
+
+</body>
+
+</html>
