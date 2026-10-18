@@ -5,15 +5,13 @@
 #include <VL53L0X.h>
 #include <MPU6050_light.h>
 #include <LittleFS.h>
+#include "secrets.h"
 
 MPU6050 mpu(Wire);
 
 // ----------------------
 // Wi-Fi
 // ----------------------
-
-const char* ssid = "BELL668";
-const char* password = "1977C4362113";
 
 WebServer server(80);
 
@@ -162,7 +160,7 @@ void setup() {
   // Connect to Wi-Fi
   // ----------------------
 
-  WiFi.begin(ssid, password);
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
 
   Serial.print("Connecting to Wi-Fi");
 
