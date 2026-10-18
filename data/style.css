@@ -3,7 +3,11 @@ body {
     color: white;
     padding: 20px;
 
-    font-family: "Comic Sans MS", "Comic Sans", cursive, sans-serif;
+    font-family: 'Montserrat', sans-serif;
+}
+
+#esp32-title {
+    margin-bottom: 0px;
 }
 
 h1 {
@@ -43,6 +47,25 @@ h2 {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 20px;
+}
+
+#data-source {
+    font-size: 18px;
+    font-weight: bold;
+    border-radius: 8px;
+    padding: 8px;
+
+    display: inline-block;
+}
+
+#data-source.connected {
+    background-color: green;
+    color: white;
+}
+
+#data-source.mock {
+    background-color: rgb(188, 0, 0);
+    color: black;
 }
 
 @media (max-width: 600px) {

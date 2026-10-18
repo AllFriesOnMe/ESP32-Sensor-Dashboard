@@ -106,12 +106,20 @@ async function detectESP32() {
         mockMode = false;
         console.log("ESP32 detected - using real data");
 
+        const badge = document.getElementById("data-source");
+
+        badge.innerHTML = "ESP32 CONNECTED";
+        badge.className = "connected";
     }
     catch (error) {
 
         mockMode = true;
         console.log("ESP32 not detected - using mock data");
 
+        const badge = document.getElementById("data-source");
+
+        badge.innerHTML = "MOCK DATA";
+        badge.className = "mock";
     }
 }
 
