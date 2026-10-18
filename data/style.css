@@ -76,9 +76,29 @@ h2 {
 }
 
 #scale-labels {
-    display: flex;
-    justify-content: space-between;
+    position: relative;
     margin-top: 8px;
+    height: 25px;
+}
+
+#scale-labels span {
+    position: absolute;
+    transform: translateX(-50%);
+}
+#scale-labels span::before {
+    content: "";
+
+    position: absolute;
+
+    width: 2px;
+    height: 10px;
+
+    background-color: white;
+
+    left: 50%;
+    top: -10.29px;
+
+    transform: translateX(-50%);
 }
 
 #distance-marker {

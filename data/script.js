@@ -22,10 +22,13 @@ function updateDistanceScale(distance) {
 
     for (let value = 0; value <= scaleMax; value += 50) {
 
-        const label =
-            document.createElement("span");
+        const label = document.createElement("span");
 
         label.innerHTML = value;
+
+        let labelPercent = value / scaleMax * 100;
+
+        label.style.left = labelPercent + "%";
 
         labels.appendChild(label);
     }
