@@ -13,14 +13,23 @@
   <h1 id="esp32-title">ESP32 Sensor Dashboard</h1>
 
   <p id = "data-source">Checking data source...</p>
-
+    
   <div class="card-1">
-    <h2>Distance</h2>
 
-    <p class="sensor-value">
-        <span id="distance">---</span> mm
-    </p>
-  </div>
+        <h2>Distance</h2>
+
+        <p class="sensor-value">
+            <span id="distance">---</span> mm
+        </p>
+
+        <div class="distance-scale">
+
+            <div id="distance-marker"></div>
+
+            <div id="scale-labels"></div>
+
+        </div>
+    </div>
 
   <div class="sensor-grid">
     <div class="card-2">

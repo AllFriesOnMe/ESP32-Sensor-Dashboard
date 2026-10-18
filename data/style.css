@@ -68,6 +68,34 @@ h2 {
     color: black;
 }
 
+.distance-scale {
+    position: relative;
+    margin-top: 30px;
+    height: 50px;
+    border-top: 3px solid white;
+}
+
+#scale-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 8px;
+}
+
+#distance-marker {
+    position: absolute;
+
+    top: -10px;
+    left: 0%;
+
+    width: 4px;
+    height: 20px;
+
+    background-color: orange;
+    
+    transform: translateX(-50%);
+    transition: left 0.2s linear;
+}
+
 @media (max-width: 600px) {
     .sensor-grid {
         grid-template-columns: 1fr;

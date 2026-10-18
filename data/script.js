@@ -10,6 +10,36 @@ let mockData = {
     gyroZ: 2.4
 };
 
+function updateDistanceScale(distance) {
+
+    let scaleMax =
+        Math.max(50, Math.ceil(distance / 50) * 50);
+
+    const labels =
+        document.getElementById("scale-labels");
+
+    labels.innerHTML = "";
+
+    for (let value = 0; value <= scaleMax; value += 50) {
+
+        const label =
+            document.createElement("span");
+
+        label.innerHTML = value;
+
+        labels.appendChild(label);
+    }
+
+    let markerPercent =
+        distance / scaleMax * 100;
+
+    markerPercent =
+        Math.max(0, Math.min(100, markerPercent));
+
+    document.getElementById("distance-marker").style.left =
+        markerPercent + "%";
+}
+
 function getMockData() {
     if (mockData.distance > 450) {
         // Mostly move downward
@@ -145,6 +175,8 @@ function displayData(data) {
 
     document.getElementById("gyroZ").innerHTML =
         data.gyroZ.toFixed(2);
+
+    updateDistanceScale(data.distance);
 }
 
 async function updateData() {
