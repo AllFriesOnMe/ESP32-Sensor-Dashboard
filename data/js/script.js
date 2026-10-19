@@ -483,6 +483,12 @@ function displayData(data) {
 
     document.getElementById("fusedRoll").innerHTML = fusedRoll.toFixed(2);
     document.getElementById("fusedPitch").innerHTML = fusedPitch.toFixed(2);
+
+    update3DOrientation(
+        fusedRoll,
+        fusedPitch,
+        gyroYaw
+    );
 }
 
 async function updateData() {
@@ -502,6 +508,8 @@ async function updateData() {
 }
 
 async function startDashboard() {
+
+    setup3DScene();
 
     await detectESP32();
 
