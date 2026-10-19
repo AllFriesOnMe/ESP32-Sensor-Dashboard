@@ -4,6 +4,27 @@ let currentScaleMax = 50;
 
 let startTime = Date.now();
 
+let gyroRoll = 0;
+let gyroPitch = 0;
+let gyroYaw = 0;
+
+let fusedRoll = 0;
+let fusedPitch = 0;
+
+let lastFusionTime = Date.now();
+
+let lastGyroTime = Date.now();
+
+let mockRoll = 0;
+let mockPitch = 0;
+let mockYaw = 0;
+
+let previousMockRoll = 0;
+let previousMockPitch = 0;
+let previousMockYaw = 0;
+
+let lastMockTime = Date.now();
+
 let mockData = {
     distance: 350,
     accelX: 0.12,
@@ -21,6 +42,7 @@ const accelChart = new Chart(
 
         data: {
             labels: [],
+
             datasets: [
                 {
                     label: "Accel X",
@@ -49,7 +71,7 @@ const accelChart = new Chart(
                     ticks: {
                         color: "white"
                     },
-                    
+
                     grid: {
                         color: "white"
                     },
@@ -69,7 +91,7 @@ const accelChart = new Chart(
                     ticks: {
                         color: "white"
                     },
-                    
+
                     grid: {
                         color: "white"
                     },
@@ -83,11 +105,96 @@ const accelChart = new Chart(
                             size: 16
                         }
                     }
-                },
+                }
+            },
+
+            plugins: {
+                legend: {
+                    position: "right",
+
+                    labels: {
+                        color: "white"
+                    }
+                }
             }
+        }
+    }
+);
+
+const gyroChart = new Chart(
+    document.getElementById("gyro-chart"),
+    {
+        type: "line",
+
+        data: {
+            labels: [],
+
+            datasets: [
+                {
+                    label: "Gyro X",
+                    data: [],
+                    borderColor: "red"
+                },
+                {
+                    label: "Gyro Y",
+                    data: [],
+                    borderColor: "lime"
+                },
+                {
+                    label: "Gyro Z",
+                    data: [],
+                    borderColor: "cyan"
+                }
+            ]
         },
 
-        plugins: {
+        options: {
+            animation: false,
+            color: "white",
+
+            scales: {
+                x: {
+                    ticks: {
+                        color: "white"
+                    },
+
+                    grid: {
+                        color: "white"
+                    },
+
+                    title: {
+                        display: true,
+                        text: "Time (s)",
+                        color: "white"
+                    }
+                },
+
+                y: {
+                    ticks: {
+                        color: "white"
+                    },
+
+                    grid: {
+                        color: "white"
+                    },
+
+                    title: {
+                        display: true,
+                        text: "Angular Velocity (deg/s)",
+                        color: "white"
+                    }
+                }
+            },
+
+            plugins: {
+                legend: {
+                    position: "right",
+
+                    labels: {
+                        color: "white"
+                    }
+                }
+            }
         }
     }
 );
@@ -140,81 +247,131 @@ function updateDistanceScale(distance) {
 }
 
 function getMockData() {
+
     if (mockData.distance > 450) {
-        // Mostly move downward
         mockData.distance += Math.random() * 15 - 12;
     }
     else if (mockData.distance < 250) {
-        // Mostly move upward
         mockData.distance += Math.random() * 15 - 3;
     }
     else {
-        // Normal random movement
         mockData.distance += Math.random() * 20 - 10;
     }
 
-    if (mockData.accelX > 0.15) {
-        mockData.accelX += Math.random() * 0.035 - 0.03;
-    }
-    else if (mockData.accelX < -0.15) {
-        mockData.accelX += Math.random() * 0.035 - 0.005;
-    }
-    else {
-        mockData.accelX += Math.random() * 0.04 - 0.02;
+    updateMockOrientation();
+
+    const currentTime = Date.now();
+
+    const dt =
+        (currentTime - lastMockTime) / 1000;
+
+    lastMockTime = currentTime;
+
+    if (dt > 0) {
+
+        mockData.gyroX =
+            (mockRoll - previousMockRoll) / dt;
+
+        mockData.gyroY =
+            (mockPitch - previousMockPitch) / dt;
+
+        mockData.gyroZ =
+            (mockYaw - previousMockYaw) / dt;
     }
 
-    if (mockData.accelY > 0.15) {
-        mockData.accelY += Math.random() * 0.035 - 0.03;
-    }
-    else if (mockData.accelY < -0.15) {
-        mockData.accelY += Math.random() * 0.035 - 0.005;
-    }
-    else {
-        mockData.accelY += Math.random() * 0.04 - 0.02;
-    }
+    const rollRad =
+        mockRoll * Math.PI / 180;
 
-    if (mockData.accelZ > 1.05) {
-        mockData.accelZ += Math.random() * 0.02 - 0.018;
-    }
-    else if (mockData.accelZ < 0.95) {
-        mockData.accelZ += Math.random() * 0.02 - 0.002;
-    }
-    else {
-        mockData.accelZ += Math.random() * 0.02 - 0.01;
-    }
+    const pitchRad =
+        mockPitch * Math.PI / 180;
 
-    if (mockData.gyroX > 3) {
-        mockData.gyroX += Math.random() * 0.6 - 0.5;
-    }
-    else if (mockData.gyroX < -3) {
-        mockData.gyroX += Math.random() * 0.6 - 0.1;
-    }
-    else {
-        mockData.gyroX += Math.random() * 0.5 - 0.25;
-    }
+    mockData.accelX =
+        -Math.sin(pitchRad);
 
-    if (mockData.gyroY > 3) {
-        mockData.gyroY += Math.random() * 0.6 - 0.5;
-    }
-    else if (mockData.gyroY < -3) {
-        mockData.gyroY += Math.random() * 0.6 - 0.1;
-    }
-    else {
-        mockData.gyroY += Math.random() * 0.5 - 0.25;
-    }
+    mockData.accelY =
+        Math.sin(rollRad) * Math.cos(pitchRad);
 
-    if (mockData.gyroZ > 3) {
-        mockData.gyroZ += Math.random() * 0.6 - 0.5;
-    }
-    else if (mockData.gyroZ < -3) {
-        mockData.gyroZ += Math.random() * 0.6 - 0.1;
-    }
-    else {
-        mockData.gyroZ += Math.random() * 0.5 - 0.25;
-    }
+    mockData.accelZ =
+        Math.cos(rollRad) * Math.cos(pitchRad);
 
 
     return mockData;
+}
+
+function updateMockOrientation() {
+
+    const time = (Date.now() - startTime) / 1000;
+
+    previousMockRoll = mockRoll;
+    previousMockPitch = mockPitch;
+    previousMockYaw = mockYaw;
+
+    mockRoll =
+        20 * Math.sin(time * 0.7);
+
+    mockPitch =
+        12 * Math.sin(time * 0.4);
+
+    mockYaw =
+        30 * Math.sin(time * 0.2);
+}
+
+function calculateAccelerationMagnitude(data) {
+    let magnitude = Math.sqrt(
+        data.accelX ** 2 + data.accelY ** 2 + data.accelZ ** 2
+    );
+
+    return magnitude;
+}
+
+function calculateRoll(data) {
+    let roll = Math.atan2(
+        data.accelY,
+        data.accelZ
+    );
+
+    return roll * 180 / Math.PI;
+}
+
+function calculatePitch(data) {
+    let pitch = Math.atan2(-data.accelX, Math.sqrt(
+        data.accelY ** 2 + data.accelZ ** 2
+    ));
+
+    return pitch * 180 / Math.PI;
+}
+
+function updateGyroAngles(data) {
+    let currentTime = Date.now();
+
+    let dt = (currentTime - lastGyroTime) / 1000;
+
+    lastGyroTime = currentTime;
+
+    gyroRoll += data.gyroX * dt;
+    gyroPitch += data.gyroY * dt;
+    gyroYaw += data.gyroZ * dt;
+}
+
+function updateFusedAngles(data) {
+
+    const currentTime = Date.now();
+
+    const dt =
+        (currentTime - lastFusionTime) / 1000;
+
+    lastFusionTime = currentTime;
+
+    const accelRoll = calculateRoll(data);
+    const accelPitch = calculatePitch(data);
+
+    fusedRoll =
+        0.98 * (fusedRoll + data.gyroX * dt)
+        + 0.02 * accelRoll;
+
+    fusedPitch =
+        0.98 * (fusedPitch + data.gyroY * dt)
+        + 0.02 * accelPitch;
 }
 
 async function detectESP32() {
@@ -283,18 +440,49 @@ function displayData(data) {
     let elapsedTime = (Date.now() - startTime) / 1000;
 
     accelChart.data.labels.push(elapsedTime.toFixed(1));
+    gyroChart.data.labels.push(elapsedTime.toFixed(1));
+
+    gyroChart.data.datasets[0].data.push(data.gyroX);
+    gyroChart.data.datasets[1].data.push(data.gyroY);
+    gyroChart.data.datasets[2].data.push(data.gyroZ);
+
     accelChart.data.datasets[0].data.push(data.accelX);
     accelChart.data.datasets[1].data.push(data.accelY);
     accelChart.data.datasets[2].data.push(data.accelZ);
 
-    if (accelChart.data.labels.length > 40) {
+    if (accelChart.data.labels.length > 20) {
         accelChart.data.labels.shift();
         accelChart.data.datasets[0].data.shift();
         accelChart.data.datasets[1].data.shift();
         accelChart.data.datasets[2].data.shift();
+        
+        gyroChart.data.labels.shift();
+        gyroChart.data.datasets[0].data.shift();
+        gyroChart.data.datasets[1].data.shift();
+        gyroChart.data.datasets[2].data.shift();
     }
 
     accelChart.update();
+    gyroChart.update();
+
+    let accelMagnitude = calculateAccelerationMagnitude(data);
+    let accelPitch = calculatePitch(data);
+    let accelRoll = calculateRoll(data);
+
+    document.getElementById("accelMagnitude").innerHTML = accelMagnitude.toFixed(2);
+    document.getElementById("accelPitch").innerHTML = accelPitch.toFixed(2);
+    document.getElementById("accelRoll").innerHTML = accelRoll.toFixed(2);
+
+    updateGyroAngles(data);
+
+    document.getElementById("gyroRoll").innerHTML = gyroRoll.toFixed(2);
+    document.getElementById("gyroPitch").innerHTML = gyroPitch.toFixed(2);
+    document.getElementById("gyroYaw").innerHTML = gyroYaw.toFixed(2);
+
+    updateFusedAngles(data);
+
+    document.getElementById("fusedRoll").innerHTML = fusedRoll.toFixed(2);
+    document.getElementById("fusedPitch").innerHTML = fusedPitch.toFixed(2);
 }
 
 async function updateData() {
