@@ -16,17 +16,17 @@ const accelChart = new Chart(
                 {
                     label: "Accel X",
                     data: [],
-                    borderColor: "#66d3f5"
+                    borderColor: "#356c63"
                 },
                 {
                     label: "Accel Y",
                     data: [],
-                    borderColor: "#69b5ff"
+                    borderColor: "#98543d"
                 },
                 {
                     label: "Accel Z",
                     data: [],
-                    borderColor: "#90acff"
+                    borderColor: "#746091"
                 }
             ]
         },
@@ -34,22 +34,22 @@ const accelChart = new Chart(
         options: {
             animation: false,
             maintainAspectRatio: false,
-            color: "#91a3b9",
+            color: "#686d63",
 
             scales: {
                 x: {
                     ticks: {
-                        color: "#91a3b9"
+                        color: "#686d63"
                     },
 
                     grid: {
-                        color: "#263344"
+                        color: "#343a3514"
                     },
 
                     title: {
                         display: true,
                         text: "Time (s)",
-                        color: "#91a3b9",
+                        color: "#686d63",
 
                         font: {
                             size: 11
@@ -59,17 +59,17 @@ const accelChart = new Chart(
 
                 y: {
                     ticks: {
-                        color: "#91a3b9"
+                        color: "#686d63"
                     },
 
                     grid: {
-                        color: "#263344"
+                        color: "#343a3514"
                     },
 
                     title: {
                         display: true,
                         text: "Acceleration (g)",
-                        color: "#91a3b9",
+                        color: "#686d63",
 
                         font: {
                             size: 11
@@ -83,7 +83,7 @@ const accelChart = new Chart(
                     position: "bottom",
 
                     labels: {
-                        color: "#91a3b9"
+                        color: "#686d63"
                     }
                 }
             }
@@ -103,17 +103,17 @@ const gyroChart = new Chart(
                 {
                     label: "Gyro X",
                     data: [],
-                    borderColor: "#66d3f5"
+                    borderColor: "#356c63"
                 },
                 {
                     label: "Gyro Y",
                     data: [],
-                    borderColor: "#69b5ff"
+                    borderColor: "#98543d"
                 },
                 {
                     label: "Gyro Z",
                     data: [],
-                    borderColor: "#90acff"
+                    borderColor: "#746091"
                 }
             ]
         },
@@ -121,38 +121,38 @@ const gyroChart = new Chart(
         options: {
             animation: false,
             maintainAspectRatio: false,
-            color: "#91a3b9",
+            color: "#686d63",
 
             scales: {
                 x: {
                     ticks: {
-                        color: "#91a3b9"
+                        color: "#686d63"
                     },
 
                     grid: {
-                        color: "#263344"
+                        color: "#343a3514"
                     },
 
                     title: {
                         display: true,
                         text: "Time (s)",
-                        color: "#91a3b9"
+                        color: "#686d63"
                     }
                 },
 
                 y: {
                     ticks: {
-                        color: "#91a3b9"
+                        color: "#686d63"
                     },
 
                     grid: {
-                        color: "#263344"
+                        color: "#343a3514"
                     },
 
                     title: {
                         display: true,
                         text: "Angular Velocity (deg/s)",
-                        color: "#91a3b9"
+                        color: "#686d63"
                     }
                 }
             },
@@ -162,7 +162,7 @@ const gyroChart = new Chart(
                     position: "bottom",
 
                     labels: {
-                        color: "#91a3b9"
+                        color: "#686d63"
                     }
                 }
             }

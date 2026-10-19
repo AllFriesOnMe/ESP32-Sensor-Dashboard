@@ -1,4 +1,4 @@
-import * as THREE from "three";
+﻿import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
 let scene;
@@ -43,7 +43,7 @@ function setup3DScene() {
     const loader = new GLTFLoader();
 
     loader.load(
-        "models/MPU6050 v2.glb",
+        "models/MPU6050-v2.glb",
         function (gltf) {
             // Center a wrapper so the model's authored transforms stay intact.
             const centeredModel = new THREE.Group();
@@ -91,11 +91,14 @@ function setup3DScene() {
 
 function update3DOrientation(roll, pitch, yaw) {
 
+    // The model lies in X/Z, with Y normal to the PCB. Map sensor
+    // X/Y/Z to model X/Z/-Y: roll about X, pitch about Z, yaw about -Y.
+    // YZX preserves the sensor's yaw-pitch-roll composition order.
     const targetEuler = new THREE.Euler(
-        THREE.MathUtils.degToRad(pitch),
-        THREE.MathUtils.degToRad(yaw),
         THREE.MathUtils.degToRad(roll),
-        "XYZ"
+        THREE.MathUtils.degToRad(-yaw),
+        THREE.MathUtils.degToRad(pitch),
+        "YZX"
     );
 
     targetQuaternion.setFromEuler(targetEuler);

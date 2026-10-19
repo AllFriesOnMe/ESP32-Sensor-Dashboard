@@ -2,6 +2,7 @@
 #include <Wire.h>
 #include <WiFi.h>
 #include <WebServer.h>
+#include <uri/UriGlob.h>
 #include <VL53L0X.h>
 #include <MPU6050_light.h>
 #include <LittleFS.h>
@@ -37,6 +38,7 @@ void handleHome() {
     return;
   }
 
+  server.sendHeader("Cache-Control", "no-cache");
   server.streamFile(
     file,
     "text/html"
@@ -57,6 +59,8 @@ void handleDistance() {
 }
 
 void handleData() {
+
+  server.sendHeader("Cache-Control", "no-store");
 
   String json = "{";
 
@@ -90,6 +94,86 @@ void handleData() {
   );
 }
 
+void listLittleFS() {
+
+  File root = LittleFS.open("/");
+
+  File file = root.openNextFile();
+
+  while (file) {
+
+    Serial.print("FILE: ");
+    Serial.print(file.name());
+
+    Serial.print(" | SIZE: ");
+    Serial.println(file.size());
+
+    file = root.openNextFile();
+  }
+}
+
+String getContentType(String path) {
+
+  if (path.endsWith(".html")) return "text/html";
+  if (path.endsWith(".css")) return "text/css";
+  if (path.endsWith(".js")) return "application/javascript";
+  if (path.endsWith(".json")) return "application/json";
+  if (path.endsWith(".glb")) return "model/gltf-binary";
+  if (path.endsWith(".png")) return "image/png";
+  if (path.endsWith(".jpg")) return "image/jpeg";
+
+  return "text/plain";
+}
+
+void handleStaticFile() {
+
+  String path = server.uri();
+
+  if (path == "/") {
+    path = "/index.html";
+  }
+
+  if (!LittleFS.exists(path)) {
+
+    Serial.print("NOT FOUND IN LITTLEFS: ");
+    Serial.println(path);
+
+    server.send(
+      404,
+      "text/plain",
+      "File not found"
+    );
+
+    return;
+  }
+
+  File file =
+    LittleFS.open(path, "r");
+
+  if (!file) {
+
+    server.send(
+      500,
+      "text/plain",
+      "Could not open file"
+    );
+
+    return;
+  }
+
+  String contentType =
+    getContentType(path);
+
+  // Reuse assets across reloads, especially the large 3D model.
+  server.sendHeader("Cache-Control", "public, max-age=300");
+  server.streamFile(
+    file,
+    contentType
+  );
+
+  file.close();
+}
+
 // ----------------------
 // Setup
 // ----------------------
@@ -106,6 +190,7 @@ void setup() {
   }
   
   Serial.println("LittleFS started");
+  listLittleFS();
 
   if(LittleFS.exists("/index.html")) {
     Serial.println("index.html found!");
@@ -113,7 +198,6 @@ void setup() {
   else {
     Serial.println("index.html NOT found!");
   }
-
   // Start I2C
   Wire.begin(21, 22);
 
@@ -149,6 +233,7 @@ void setup() {
   }
 
   Serial.println("VL53L0X ready");
+  tof.startContinuous(100);
 
 
   // ----------------------
@@ -156,6 +241,7 @@ void setup() {
   // ----------------------
 
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+  WiFi.setSleep(false);
 
   Serial.print("Connecting to Wi-Fi");
 
@@ -172,15 +258,17 @@ void setup() {
   Serial.print("Go to: http://");
   Serial.println(WiFi.localIP());
 
-
-  // ----------------------
   // Website routes
-  // ----------------------
 
-  server.on("/", handleHome);
-  server.on("/data", handleData);
+  server.on("/data", HTTP_GET, handleData);
+  server.on("/", HTTP_GET, handleHome);
 
-  server.serveStatic("/style.css", LittleFS, "/style.css");
+  // Register file requests as a real route. onNotFound logs an error
+  // before invoking its callback, even when that callback serves a file.
+  server.on(UriGlob("/*"), HTTP_GET, handleStaticFile);
+  server.onNotFound([]() {
+    server.send(404, "text/plain", "Not found");
+  });
 
   server.begin();
 
@@ -193,18 +281,18 @@ void loop() {
 
   mpu.update();
 
-  // Update distance every 100 ms
+  // Continuous ranging runs on the sensor. Only read a completed sample
+  // so a measurement never holds up HTTP handling for up to 500 ms.
   if (millis() - lastDistanceRead >= 100) {
 
     lastDistanceRead = millis();
 
-    uint16_t reading =
-      tof.readRangeSingleMillimeters();
+    if ((tof.readReg(VL53L0X::RESULT_INTERRUPT_STATUS) & 0x07) != 0) {
+      uint16_t reading = tof.readRangeContinuousMillimeters();
 
-    if (!tof.timeoutOccurred()) {
-
-      distanceMM = reading;
-
+      if (!tof.timeoutOccurred()) {
+        distanceMM = reading;
+      }
     }
 
   }

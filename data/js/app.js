@@ -48,41 +48,50 @@ function displayData(data) {
     document.getElementById("fusedRoll").innerHTML = fusedRoll.toFixed(2);
     document.getElementById("fusedPitch").innerHTML = fusedPitch.toFixed(2);
 
-    window.update3DOrientation(
-        fusedRoll,
-        fusedPitch,
-        gyroYaw
-    );
+    if (orientationReady) {
+        window.update3DOrientation(fusedRoll, fusedPitch, gyroYaw);
+    }
 }
 
-async function updateData() {
-    const data = await getSensorData();
+async function updateLoop() {
 
-    displayData(data);
+    try {
+        const data = await getSensorData();
+        displayData(data);
+    }
+    catch (error) {
+        console.error("Sensor update failed:", error);
+    }
+    finally {
+        // Keep one request in flight and retry after transient failures.
+        setTimeout(updateLoop, 250);
+    }
 }
 
+let orientationReady = false;
+
+function startOrientation() {
+    if (orientationReady) return;
+    try {
+        window.setup3DScene();
+        orientationReady = true;
+    }
+    catch (error) {
+        console.error("3D viewer unavailable:", error);
+    }
+}
+
+// Telemetry can start even if the external 3D modules load slowly or fail.
 async function startDashboard() {
-
-    window.setup3DScene();
-
     await detectESP32();
+    updateLoop();
 
-    updateData();
-
-    setInterval(updateData, 250);
+    if (typeof window.setup3DScene === "function") {
+        startOrientation();
+    }
+    else {
+        window.addEventListener("orientation3d-ready", startOrientation, { once: true });
+    }
 }
 
-if (typeof window.setup3DScene === "function") {
-
-    startDashboard();
-
-}
-else {
-
-    window.addEventListener(
-        "orientation3d-ready",
-        startDashboard,
-        { once: true }
-    );
-
-}
+startDashboard();
