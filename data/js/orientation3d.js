@@ -2,7 +2,7 @@ let scene;
 let camera;
 let renderer;
 let board;
-
+let targetQuaternion = new THREE.Quaternion();
 
 function setup3DScene() {
 
@@ -66,14 +66,30 @@ function setup3DScene() {
         "resize",
         resize3DScene()
     );
+
+    animate3D();
 }
 
-function update3DOrientation() {
-    board.rotation.x = THREE.MathUtils.degToRad(fusedPitch);
+function update3DOrientation(roll, pitch, yaw) {
 
-    board.rotation.z = THREE.MathUtils.degToRad(fusedRoll);
+    const targetEuler = new THREE.Euler(
+        THREE.MathUtils.degToRad(pitch),
+        THREE.MathUtils.degToRad(yaw),
+        THREE.MathUtils.degToRad(roll),
+        "XYZ"
+    );
 
-    board.rotation.y = THREE.MathUtils.degToRad(gyroYaw);
+    targetQuaternion.setFromEuler(targetEuler);
+}
+
+function animate3D() {
+
+    requestAnimationFrame(animate3D);
+
+    board.quaternion.slerp(
+        targetQuaternion,
+        0.025
+    );
 
     renderer.render(scene, camera);
 }
