@@ -1,135 +1,77 @@
-<!DOCTYPE html>
-
-<html>
-
+﻿<!DOCTYPE html>
+<html lang="en">
 <head>
-    <script type="importmap">
-    {
-        "imports": {
-            "three": "https://cdn.jsdelivr.net/npm/three@0.159.0/build/three.module.js",
-            "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.159.0/examples/jsm/"
-        }
-    }
-    </script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0c121b">
   <title>ESP32 Sensor Dashboard</title>
-
   <link rel="stylesheet" href="style.css">
+  <script type="importmap">
+  {"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.159.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.159.0/examples/jsm/"}}
+  </script>
 </head>
-
 <body>
-
-  <h1 id="esp32-title">ESP32 Sensor Dashboard</h1>
-
-  <p id = "data-source">Checking data source...</p>
-    
-  <div class="card-1">
-
-        <h2>Distance</h2>
-
-        <p class="sensor-value">
-            <span id="distance">---</span> mm
-        </p>
-
-        <div class="distance-scale">
-
-            <div id="distance-marker"></div>
-
-            <div id="scale-labels"></div>
-
+  <main class="dashboard">
+    <header class="page-header">
+      <div class="brand"><div class="brand-icon" aria-hidden="true">⌁</div><div><p class="eyebrow">ESP32 / SENSOR TELEMETRY</p><h1 id="esp32-title">Sensor dashboard<span>.</span></h1></div></div>
+      <div class="connection"><p id="data-source" role="status">Checking data source...</p><span class="refresh-note">Refresh interval · 250 ms</span></div>
+    </header>
+    <div class="section-heading"><h2>Telemetry overview</h2><span>Distance &amp; motion</span></div>
+    <section class="card-1" aria-labelledby="distance-title">
+      <div class="card-heading"><div><p class="eyebrow">01 / RANGE</p><h2 id="distance-title">Distance</h2></div><span class="tag">Auto-scaling range</span></div>
+      <p class="distance-reading"><span id="distance">---</span><span class="unit">mm</span></p>
+      <div class="distance-scale"><div id="distance-marker"></div><div id="scale-labels"></div></div>
+    </section>
+    <div class="sensor-grid">
+      <section class="card-2" aria-labelledby="accel-title">
+        <div class="card-heading"><div><p class="eyebrow">02 / LINEAR MOTION</p><h2 id="accel-title">Accelerometer</h2></div><span class="tag">g</span></div>
+        <div class="axis-readings">
+          <p class="sensor-value axis-x"><span class="axis-label">X axis</span><span id="accelX">---</span><small>g</small></p>
+          <p class="sensor-value axis-y"><span class="axis-label">Y axis</span><span id="accelY">---</span><small>g</small></p>
+          <p class="sensor-value axis-z"><span class="axis-label">Z axis</span><span id="accelZ">---</span><small>g</small></p>
         </div>
+        <div class="chart-wrap"><canvas id="accel-chart" role="img" aria-label="Live acceleration history for X, Y and Z axes"></canvas></div>
+      </section>
+      <section class="card-2" aria-labelledby="gyro-title">
+        <div class="card-heading"><div><p class="eyebrow">03 / ANGULAR MOTION</p><h2 id="gyro-title">Gyroscope</h2></div><span class="tag">deg/s</span></div>
+        <div class="axis-readings">
+          <p class="sensor-value axis-x"><span class="axis-label">X axis</span><span id="gyroX">---</span><small>deg/s</small></p>
+          <p class="sensor-value axis-y"><span class="axis-label">Y axis</span><span id="gyroY">---</span><small>deg/s</small></p>
+          <p class="sensor-value axis-z"><span class="axis-label">Z axis</span><span id="gyroZ">---</span><small>deg/s</small></p>
+        </div>
+        <div class="chart-wrap"><canvas id="gyro-chart" role="img" aria-label="Live angular velocity history for X, Y and Z axes"></canvas></div>
+      </section>
     </div>
-
-  <div class="sensor-grid">
-    <div class="card-2">
-        <h2>Accelerometer</h2>
-        <p class="sensor-value">
-            X: <span id="accelX">---</span> g
-        </p>
-        <p class="sensor-value">
-            Y: <span id="accelY">---</span> g
-        </p>
-        <p class="sensor-value">
-            Z: <span id="accelZ">---</span> g
-        </p>
-
-        <canvas id="accel-chart"></canvas>
+    <div class="section-heading"><h2>Orientation &amp; analysis</h2><span>MPU6050</span></div>
+    <div class="analysis-grid">
+      <section class="card-4" aria-labelledby="orientation-title">
+        <div class="card-heading"><div><p class="eyebrow">04 / SPATIAL VIEW</p><h2 id="orientation-title">3D orientation</h2></div><span class="tag">Fused motion</span></div>
+        <div id="orientation-container" role="img" aria-label="3D sensor board showing its current orientation"></div>
+        <p class="panel-note">Board rotation follows fused roll, fused pitch and gyro yaw.</p>
+      </section>
+      <section class="card-3" aria-labelledby="motion-title">
+        <div class="card-heading"><div><p class="eyebrow">05 / COMPUTED VALUES</p><h2 id="motion-title">Derived motion</h2></div></div>
+        <dl class="motion-values">
+          <div><dt>Acceleration magnitude</dt><dd><span id="accelMagnitude">---</span><small>g</small></dd></div>
+          <div><dt>Accelerometer roll</dt><dd><span id="accelRoll">---</span><small>&deg;</small></dd></div>
+          <div><dt>Accelerometer pitch</dt><dd><span id="accelPitch">---</span><small>&deg;</small></dd></div>
+          <div><dt>Gyro roll</dt><dd><span id="gyroRoll">---</span><small>&deg;</small></dd></div>
+          <div><dt>Gyro pitch</dt><dd><span id="gyroPitch">---</span><small>&deg;</small></dd></div>
+          <div><dt>Gyro yaw</dt><dd><span id="gyroYaw">---</span><small>&deg;</small></dd></div>
+          <div class="fused"><dt>Fused roll</dt><dd><span id="fusedRoll">---</span><small>&deg;</small></dd></div>
+          <div class="fused"><dt>Fused pitch</dt><dd><span id="fusedPitch">---</span><small>&deg;</small></dd></div>
+        </dl>
+      </section>
     </div>
-
-    <div class="card-2">
-        <h2>Gyroscope</h2>
-        <p class="sensor-value">
-            X: <span id="gyroX">---</span> deg/s
-        </p>
-        <p class="sensor-value">
-            Y: <span id="gyroY">---</span> deg/s
-        </p>
-        <p class="sensor-value">
-            Z: <span id="gyroZ">---</span> deg/s
-        </p>
-
-        <canvas id="gyro-chart"></canvas>
-    </div>
-  </div>
-
-  <div class="card-3">
-    <h2>Derived Motion Data</h2>
-
-    <p class="sensor-value">
-        Acceleration Magnitude:
-        <span id="accelMagnitude">---</span> g
-    </p>
-
-    <p class="sensor-value">
-        Accelerometer Roll:
-        <span id="accelRoll">---</span>°
-    </p>
-
-    <p class="sensor-value">
-        Accelerometer Pitch:
-        <span id="accelPitch">---</span>°
-    </p>
-
-    <p class="sensor-value">
-        Gyro Roll:
-        <span id="gyroRoll">---</span>°
-    </p>
-
-    <p class="sensor-value">
-        Gyro Pitch:
-        <span id="gyroPitch">---</span>°
-    </p>
-
-    <p class="sensor-value">
-        Gyro Yaw:
-        <span id="gyroYaw">---</span>°
-    </p>
-
-    <p class="sensor-value">
-        Fused Roll:
-        <span id="fusedRoll">---</span>°
-    </p>
-
-    <p class="sensor-value">
-        Fused Pitch:
-        <span id="fusedPitch">---</span>°
-    </p>
-  </div>
-
-  <div class="card-4">
-    <h2>3D Orientation</h2>
-
-    <div id="orientation-container"></div>
-  </div>
-
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="js/charts.js"></script>
-<script src="js/motion.js"></script>
-<script src="js/mock.js"></script>
-<script src="js/distance.js"></script>
-<script type="module" src="js/orientation3d.js"></script>
-<script src="js/sensorData.js"></script>
-<script src="js/app.js"></script>
-
+    <footer><span><span class="footer-dot"></span> ESP32 Sensor Dashboard</span><span>VL53L0X + MPU6050</span></footer>
+  </main>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="js/charts.js"></script>
+  <script src="js/motion.js"></script>
+  <script src="js/mock.js"></script>
+  <script src="js/distance.js"></script>
+  <script type="module" src="js/orientation3d.js"></script>
+  <script src="js/sensorData.js"></script>
+  <script src="js/app.js"></script>
 </body>
 </html>

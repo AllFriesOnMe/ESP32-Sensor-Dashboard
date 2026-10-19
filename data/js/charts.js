@@ -1,3 +1,9 @@
+Chart.defaults.font.family = "'Segoe UI', system-ui, sans-serif";
+Chart.defaults.font.size = 10;
+Chart.defaults.elements.point.radius = 0;
+Chart.defaults.elements.line.borderWidth = 2;
+Chart.defaults.plugins.legend.labels.usePointStyle = true;
+Chart.defaults.plugins.legend.labels.boxWidth = 6;
 const accelChart = new Chart(
     document.getElementById("accel-chart"),
     {
@@ -10,62 +16,63 @@ const accelChart = new Chart(
                 {
                     label: "Accel X",
                     data: [],
-                    borderColor: "red"
+                    borderColor: "#ffab83"
                 },
                 {
                     label: "Accel Y",
                     data: [],
-                    borderColor: "lime"
+                    borderColor: "#61dfc3"
                 },
                 {
                     label: "Accel Z",
                     data: [],
-                    borderColor: "cyan"
+                    borderColor: "#90acff"
                 }
             ]
         },
 
         options: {
             animation: false,
-            color: "white",
+            maintainAspectRatio: false,
+            color: "#91a3b9",
 
             scales: {
                 x: {
                     ticks: {
-                        color: "white"
+                        color: "#91a3b9"
                     },
 
                     grid: {
-                        color: "white"
+                        color: "#263344"
                     },
 
                     title: {
                         display: true,
                         text: "Time (s)",
-                        color: "white",
+                        color: "#91a3b9",
 
                         font: {
-                            size: 16
+                            size: 11
                         }
                     }
                 },
 
                 y: {
                     ticks: {
-                        color: "white"
+                        color: "#91a3b9"
                     },
 
                     grid: {
-                        color: "white"
+                        color: "#263344"
                     },
 
                     title: {
                         display: true,
                         text: "Acceleration (g)",
-                        color: "white",
+                        color: "#91a3b9",
 
                         font: {
-                            size: 16
+                            size: 11
                         }
                     }
                 }
@@ -73,10 +80,10 @@ const accelChart = new Chart(
 
             plugins: {
                 legend: {
-                    position: "right",
+                    position: "bottom",
 
                     labels: {
-                        color: "white"
+                        color: "#91a3b9"
                     }
                 }
             }
@@ -96,65 +103,66 @@ const gyroChart = new Chart(
                 {
                     label: "Gyro X",
                     data: [],
-                    borderColor: "red"
+                    borderColor: "#ffab83"
                 },
                 {
                     label: "Gyro Y",
                     data: [],
-                    borderColor: "lime"
+                    borderColor: "#61dfc3"
                 },
                 {
                     label: "Gyro Z",
                     data: [],
-                    borderColor: "cyan"
+                    borderColor: "#90acff"
                 }
             ]
         },
 
         options: {
             animation: false,
-            color: "white",
+            maintainAspectRatio: false,
+            color: "#91a3b9",
 
             scales: {
                 x: {
                     ticks: {
-                        color: "white"
+                        color: "#91a3b9"
                     },
 
                     grid: {
-                        color: "white"
+                        color: "#263344"
                     },
 
                     title: {
                         display: true,
                         text: "Time (s)",
-                        color: "white"
+                        color: "#91a3b9"
                     }
                 },
 
                 y: {
                     ticks: {
-                        color: "white"
+                        color: "#91a3b9"
                     },
 
                     grid: {
-                        color: "white"
+                        color: "#263344"
                     },
 
                     title: {
                         display: true,
                         text: "Angular Velocity (deg/s)",
-                        color: "white"
+                        color: "#91a3b9"
                     }
                 }
             },
 
             plugins: {
                 legend: {
-                    position: "right",
+                    position: "bottom",
 
                     labels: {
-                        color: "white"
+                        color: "#91a3b9"
                     }
                 }
             }

@@ -24,7 +24,8 @@ function setup3DScene() {
     camera.position.z = 5;
 
     renderer = new THREE.WebGLRenderer({
-        antialias: true
+        antialias: true,
+        alpha: true
     });
 
     renderer.setSize(
