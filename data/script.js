@@ -1,5 +1,7 @@
 let mockMode = false;
 
+let currentScaleMax = 50;
+
 let mockData = {
     distance: 350,
     accelX: 0.12,
@@ -10,10 +12,45 @@ let mockData = {
     gyroZ: 2.4
 };
 
-function updateDistanceScale(distance) {
+const accelChart = new Chart(
+    document.getElementById("accel-chart"),
+    {
+        type: "line",
 
-    let scaleMax =
-        Math.max(50, Math.ceil(distance / 50) * 50);
+        data: {
+            labels: [],
+            datasets: [
+                {
+                    label: "Accel X",
+                    data: []
+                }
+            ]
+        },
+
+        options: {
+            animation: false
+        }
+    }
+);
+
+function updateDistanceScale(distance) {
+    const step = 50;
+
+    let desiredScaleMax =
+        Math.max(step, Math.ceil(distance / step) * step);
+
+    if (desiredScaleMax > currentScaleMax) {
+        currentScaleMax = desiredScaleMax;
+    }
+
+    else if (
+        desiredScaleMax < currentScaleMax &&
+        distance < desiredScaleMax - 20
+    ) {
+        currentScaleMax = desiredScaleMax;
+    }
+
+    let scaleMax = currentScaleMax;
 
     const labels =
         document.getElementById("scale-labels");
@@ -143,6 +180,8 @@ async function detectESP32() {
 
         badge.innerHTML = "ESP32 CONNECTED";
         badge.className = "connected";
+
+        document.getElementById("distance-marker").className = "connected";
     }
     catch (error) {
 
@@ -153,6 +192,7 @@ async function detectESP32() {
 
         badge.innerHTML = "MOCK DATA";
         badge.className = "mock";
+        document.getElementById("distance-marker").className = "mock";
     }
 }
 
@@ -180,6 +220,12 @@ function displayData(data) {
         data.gyroZ.toFixed(2);
 
     updateDistanceScale(data.distance);
+
+    accelChart.data.labels.push("");
+
+    accelChart.data.datasets[0].data.push(data.accelX);
+
+    accelChart.update();
 }
 
 async function updateData() {

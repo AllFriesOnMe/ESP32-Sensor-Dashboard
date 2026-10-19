@@ -116,6 +116,14 @@ h2 {
     transition: left 0.2s linear;
 }
 
+#distance-marker.mock {
+    background-color: rgb(255, 69, 69);
+}
+
+#distance-marker.connected {
+    background-color: green;
+}
+
 @media (max-width: 600px) {
     .sensor-grid {
         grid-template-columns: 1fr;
