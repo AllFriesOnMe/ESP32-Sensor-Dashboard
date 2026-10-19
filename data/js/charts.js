@@ -16,12 +16,12 @@ const accelChart = new Chart(
                 {
                     label: "Accel X",
                     data: [],
-                    borderColor: "#ffab83"
+                    borderColor: "#66d3f5"
                 },
                 {
                     label: "Accel Y",
                     data: [],
-                    borderColor: "#61dfc3"
+                    borderColor: "#69b5ff"
                 },
                 {
                     label: "Accel Z",
@@ -103,12 +103,12 @@ const gyroChart = new Chart(
                 {
                     label: "Gyro X",
                     data: [],
-                    borderColor: "#ffab83"
+                    borderColor: "#66d3f5"
                 },
                 {
                     label: "Gyro Y",
                     data: [],
-                    borderColor: "#61dfc3"
+                    borderColor: "#69b5ff"
                 },
                 {
                     label: "Gyro Z",

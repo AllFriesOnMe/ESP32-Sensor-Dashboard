@@ -5,6 +5,7 @@ let scene;
 let camera;
 let renderer;
 let board;
+let modelRadius = 1.5;
 let targetQuaternion = new THREE.Quaternion();
 
 function setup3DScene() {
@@ -37,62 +38,34 @@ function setup3DScene() {
         renderer.domElement
     );
 
-board = new THREE.Group();
-scene.add(board);
-const loader = new GLTFLoader();
+    board = new THREE.Group();
+    scene.add(board);
+    const loader = new GLTFLoader();
 
-loader.load(
-    "models/MPU6050 v2.glb",
+    loader.load(
+        "models/MPU6050 v2.glb",
+        function (gltf) {
+            // Center a wrapper so the model's authored transforms stay intact.
+            const centeredModel = new THREE.Group();
+            centeredModel.add(gltf.scene);
+            const box = new THREE.Box3().setFromObject(centeredModel);
+            const center = box.getCenter(new THREE.Vector3());
+            gltf.scene.position.sub(center);
 
-    function (gltf) {
-        const model = gltf.scene;
+            const size = box.getSize(new THREE.Vector3());
+            const scale = 3 / Math.max(size.x, size.y, size.z);
+            centeredModel.scale.setScalar(scale);
+            modelRadius = size.length() * scale / 2;
+            board.add(centeredModel);
+            fitCameraToModel();
 
-        // Measure the model
-        const box = new THREE.Box3().setFromObject(model);
-
-        const size = box.getSize(
-            new THREE.Vector3()
-        );
-
-        const center = box.getCenter(
-            new THREE.Vector3()
-        );
-
-        // Scale it to a useful size
-        const maxDimension = Math.max(
-            size.x,
-            size.y,
-            size.z
-        );
-
-        const scale = 3 / maxDimension;
-
-        model.scale.setScalar(scale);
-
-        // Recalculate bounding box AFTER scaling
-        box.setFromObject(model);
-
-        box.getCenter(center);
-
-
-        // Move model so its CENTER is at 0,0,0
-        model.position.sub(center);
-
-
-        // Put centered model inside the rotating board group
-        board.add(model);
-
-        camera.lookAt(0, 0, 0);
-
-        console.log("MPU6050 model loaded");
+            console.log("MPU6050 model loaded");
         },
-
         undefined,
-
         function (error) {
             console.error("Error loading MPU6050 model:", error);
         }
-);
+    );
 
     const ambientLight =
         new THREE.AmbientLight(0xffffff, 1.5);
@@ -159,8 +132,19 @@ function resize3DScene() {
         width / height;
 
     camera.updateProjectionMatrix();
+    fitCameraToModel();
 
     renderer.render(scene, camera);
+}
+
+function fitCameraToModel() {
+    // Keep the whole rotating board framed even in a narrow viewport.
+    const verticalFov = THREE.MathUtils.degToRad(camera.fov);
+    const horizontalFov = 2 * Math.atan(Math.tan(verticalFov / 2) * camera.aspect);
+    const limitingFov = Math.min(verticalFov, horizontalFov);
+    const distance = modelRadius / Math.sin(limitingFov / 2) * 1.15;
+    camera.position.set(0, 0, distance);
+    camera.lookAt(0, 0, 0);
 }
 
 window.setup3DScene = setup3DScene;
