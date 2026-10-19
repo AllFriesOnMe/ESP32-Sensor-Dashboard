@@ -2,6 +2,8 @@ let mockMode = false;
 
 let currentScaleMax = 50;
 
+let startTime = Date.now();
+
 let mockData = {
     distance: 350,
     accelX: 0.12,
@@ -22,13 +24,70 @@ const accelChart = new Chart(
             datasets: [
                 {
                     label: "Accel X",
-                    data: []
+                    data: [],
+                    borderColor: "red"
+                },
+                {
+                    label: "Accel Y",
+                    data: [],
+                    borderColor: "lime"
+                },
+                {
+                    label: "Accel Z",
+                    data: [],
+                    borderColor: "cyan"
                 }
             ]
         },
 
         options: {
-            animation: false
+            animation: false,
+            color: "white",
+
+            scales: {
+                x: {
+                    ticks: {
+                        color: "white"
+                    },
+                    
+                    grid: {
+                        color: "white"
+                    },
+
+                    title: {
+                        display: true,
+                        text: "Time (s)",
+                        color: "white",
+
+                        font: {
+                            size: 16
+                        }
+                    }
+                },
+
+                y: {
+                    ticks: {
+                        color: "white"
+                    },
+                    
+                    grid: {
+                        color: "white"
+                    },
+
+                    title: {
+                        display: true,
+                        text: "Acceleration (g)",
+                        color: "white",
+
+                        font: {
+                            size: 16
+                        }
+                    }
+                },
+            }
+        },
+
+        plugins: {
         }
     }
 );
@@ -57,7 +116,7 @@ function updateDistanceScale(distance) {
 
     labels.innerHTML = "";
 
-    for (let value = 0; value <= scaleMax; value += 50) {
+    for (let value = 0; value <= scaleMax; value += step) {
 
         const label = document.createElement("span");
 
@@ -221,9 +280,19 @@ function displayData(data) {
 
     updateDistanceScale(data.distance);
 
-    accelChart.data.labels.push("");
+    let elapsedTime = (Date.now() - startTime) / 1000;
 
+    accelChart.data.labels.push(elapsedTime.toFixed(1));
     accelChart.data.datasets[0].data.push(data.accelX);
+    accelChart.data.datasets[1].data.push(data.accelY);
+    accelChart.data.datasets[2].data.push(data.accelZ);
+
+    if (accelChart.data.labels.length > 40) {
+        accelChart.data.labels.shift();
+        accelChart.data.datasets[0].data.shift();
+        accelChart.data.datasets[1].data.shift();
+        accelChart.data.datasets[2].data.shift();
+    }
 
     accelChart.update();
 }
