@@ -3,6 +3,14 @@
 <html>
 
 <head>
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three@0.159.0/build/three.module.js",
+            "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.159.0/examples/jsm/"
+        }
+    }
+    </script>
   <title>ESP32 Sensor Dashboard</title>
 
   <link rel="stylesheet" href="style.css">
@@ -115,12 +123,11 @@
 
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.159.0/build/three.min.js"></script>
 <script src="js/charts.js"></script>
 <script src="js/motion.js"></script>
 <script src="js/mock.js"></script>
 <script src="js/distance.js"></script>
-<script src="js/orientation3d.js"></script>
+<script type="module" src="js/orientation3d.js"></script>
 <script src="js/sensorData.js"></script>
 <script src="js/app.js"></script>
 

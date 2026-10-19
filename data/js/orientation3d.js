@@ -1,3 +1,6 @@
+import * as THREE from "three";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+
 let scene;
 let camera;
 let renderer;
@@ -33,20 +36,62 @@ function setup3DScene() {
         renderer.domElement
     );
 
-    const boardGeometry =
-        new THREE.BoxGeometry(3, 0.25, 2);
+board = new THREE.Group();
+scene.add(board);
+const loader = new GLTFLoader();
 
-    const boardMaterial =
-        new THREE.MeshStandardMaterial({
-            color: 0x1565c0
-        });
+loader.load(
+    "models/MPU6050 v2.glb",
 
-    board = new THREE.Mesh(
-        boardGeometry,
-        boardMaterial
-    );
+    function (gltf) {
+        const model = gltf.scene;
 
-    scene.add(board);
+        // Measure the model
+        const box = new THREE.Box3().setFromObject(model);
+
+        const size = box.getSize(
+            new THREE.Vector3()
+        );
+
+        const center = box.getCenter(
+            new THREE.Vector3()
+        );
+
+        // Scale it to a useful size
+        const maxDimension = Math.max(
+            size.x,
+            size.y,
+            size.z
+        );
+
+        const scale = 3 / maxDimension;
+
+        model.scale.setScalar(scale);
+
+        // Recalculate bounding box AFTER scaling
+        box.setFromObject(model);
+
+        box.getCenter(center);
+
+
+        // Move model so its CENTER is at 0,0,0
+        model.position.sub(center);
+
+
+        // Put centered model inside the rotating board group
+        board.add(model);
+
+        camera.lookAt(0, 0, 0);
+
+        console.log("MPU6050 model loaded");
+        },
+
+        undefined,
+
+        function (error) {
+            console.error("Error loading MPU6050 model:", error);
+        }
+);
 
     const ambientLight =
         new THREE.AmbientLight(0xffffff, 1.5);
@@ -64,7 +109,7 @@ function setup3DScene() {
 
     window.addEventListener(
         "resize",
-        resize3DScene()
+        resize3DScene
     );
 
     animate3D();
@@ -86,10 +131,12 @@ function animate3D() {
 
     requestAnimationFrame(animate3D);
 
-    board.quaternion.slerp(
-        targetQuaternion,
-        0.025
-    );
+    if (board) {
+        board.quaternion.slerp(
+            targetQuaternion,
+            0.025
+        );
+    }
 
     renderer.render(scene, camera);
 }
@@ -114,3 +161,10 @@ function resize3DScene() {
 
     renderer.render(scene, camera);
 }
+
+window.setup3DScene = setup3DScene;
+window.update3DOrientation = update3DOrientation;
+
+window.dispatchEvent(
+    new Event("orientation3d-ready")
+);
