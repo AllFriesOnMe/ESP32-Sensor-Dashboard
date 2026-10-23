@@ -17,6 +17,13 @@ const angleZero = {
     fusedPitch: 0
 };
 
+window.addEventListener("sensor-source-changed", () => {
+    gyroRoll = gyroPitch = gyroYaw = 0;
+    fusedRoll = fusedPitch = 0;
+    lastGyroTime = lastFusionTime = Date.now();
+    for (const key of Object.keys(angleZero)) angleZero[key] = 0;
+});
+
 window.addEventListener("reset-motion-values", () => {
     Object.assign(angleZero, {
         gyroRoll, gyroPitch, gyroYaw, fusedRoll, fusedPitch

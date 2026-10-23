@@ -15,6 +15,14 @@ const referenceInverse = new THREE.Quaternion();
 let hasOrientationSample = false;
 let resetPending = false;
 
+window.addEventListener("sensor-source-changed", () => {
+    referenceInverse.identity();
+    targetQuaternion.identity();
+    sensorQuaternion.identity();
+    hasOrientationSample = false;
+    resetPending = false;
+});
+
 function setup3DScene() {
 
     const orientationContainer = document.getElementById("orientation-container");

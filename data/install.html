@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f6f2e9">
+  <title>Install firmware · ESP32 Sensor Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="dashboard installer">
+    <header class="installer-header">
+      <p class="eyebrow">ESP32 / FIRST-TIME SETUP</p>
+      <h1>Install sensor firmware</h1>
+      <p>Set up your board from the browser. No PlatformIO installation needed.</p>
+      <a class="firmware-link" href="index.html">Back to dashboard</a>
+    </header>
+    <section class="card-1" aria-labelledby="supported-board">
+      <h2 id="supported-board">ESP32 DevKit / WROOM-32</h2>
+      <p>This installer supports the classic ESP32 with 4 MB flash and an MPU6050 plus VL53L0X. ESP32-C3, S2, S3 and other chip families need a different firmware build.</p>
+      <table class="wiring-table">
+        <caption>Connect both sensor modules to the same I2C bus</caption>
+        <thead><tr><th scope="col">Sensor connection</th><th scope="col">ESP32 connection</th></tr></thead>
+        <tbody>
+          <tr><td>SDA (both modules)</td><td>GPIO 21 by default</td></tr>
+          <tr><td>SCL (both modules)</td><td>GPIO 22 by default</td></tr>
+          <tr><td>GND (both modules)</td><td>GND</td></tr>
+          <tr><td>Power</td><td>Use each module's specified supply; I2C signals must be 3.3 V compatible</td></tr>
+          <tr><td>MPU6050 AD0</td><td>Low / GND (address 0x68)</td></tr>
+        </tbody>
+      </table>
+      <p>Wire with power disconnected. For different SDA/SCL wiring, click Sensor setup beside Connect ESP32 on the dashboard; the wiring and scan dialog also opens automatically after connecting. Keep the board still during startup calibration and place a target in front of the distance sensor.</p>
+    </section>
+    <section class="card-2" aria-labelledby="install-title">
+      <h2 id="install-title">Install once, then connect</h2>
+      <ol class="install-steps">
+        <li>Plug the board into your computer with a USB data cable. Close Serial Monitor and any dashboard tabs connected to it.</li>
+        <li>Click <strong>Install firmware</strong>, select the board's serial port, and follow the installer.</li>
+        <li>Wait for installation to finish, then close the installer dialog to release the USB port.</li>
+        <li><a href="index.html">Return to the dashboard</a> and click <strong>Connect ESP32 (USB)</strong>. Select the same port and wait for live readings.</li>
+      </ol>
+      <p class="install-notice"><strong>Installing replaces the board's current program.</strong> Choosing to erase also removes saved settings and files. Save anything you need first. This firmware uses USB; no Wi-Fi password is required.</p>
+      <esp-web-install-button id="firmware-installer" manifest="firmware/manifest.json" hidden>
+        <button class="install-button" slot="activate" type="button">Install firmware</button>
+        <span slot="unsupported">Use desktop Chrome or Edge to install over USB.</span>
+        <span slot="not-allowed">Open this page over HTTPS or localhost to install.</span>
+      </esp-web-install-button>
+      <p id="install-status" role="status">Loading installer…</p>
+      <details class="install-help">
+        <summary>Board not connecting?</summary>
+        <p>Check your USB cable and serial driver. Close other apps using the port. If the installer stays at Connecting, hold BOOT while it connects, then release it when writing begins. Keep the cable connected until installation finishes.</p>
+      </details>
+    </section>
+  </main>
+  <script type="module" src="js/install.js"></script>
+</body>
+</html>

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
@@ -15,11 +15,29 @@
     <header class="page-header">
       <div class="brand"><div><p class="eyebrow">ESP32 / SENSOR TELEMETRY</p><h1 id="esp32-title">Sensor dashboard</h1></div></div>
       <div id="usb-connect-controls">
-        <button id="connect-esp32" type="button" aria-describedby="usb-status">Connect ESP32 (USB)</button>
-        <span id="usb-status" aria-live="polite">No device selected</span>
+        <div class="usb-connect-main">
+          <button id="connect-esp32" type="button" aria-describedby="usb-status">Connect ESP32 (USB)</button>
+          <span id="usb-status" aria-live="polite">No device selected</span>
+          <a class="firmware-link" href="install.html">First time? Install firmware</a>
+        </div>
+        <button id="open-sensor-setup" type="button" aria-haspopup="dialog" aria-controls="sensor-setup-dialog">Sensor setup</button>
       </div>
-      <div class="connection"><p id="data-source" role="status">Checking data source...</p><span class="refresh-note">Refresh interval · 250 ms</span></div>
+      <div class="connection"><p id="data-source" class="mock" role="status">MOCK DATA</p><span class="refresh-note">Refresh interval · 250 ms</span></div>
     </header>
+    <dialog id="sensor-setup-dialog" class="sensor-setup" aria-labelledby="sensor-setup-title" aria-describedby="sensor-setup-description">
+      <div class="sensor-setup-heading">
+        <h2 id="sensor-setup-title">Sensor wiring &amp; I²C scan</h2>
+        <button id="close-sensor-setup" type="button" aria-label="Close sensor setup">Close</button>
+      </div>
+      <p id="sensor-setup-description">Use the GPIO numbers wired to your sensors. Connect by USB first, then scan. Keep the board still during calibration. Successful sensor initialization saves the pins on the board.</p>
+      <form id="i2c-form" class="i2c-form">
+        <label for="i2c-sda">SDA GPIO<input id="i2c-sda" name="sda" type="number" min="0" max="33" step="1" value="21" required></label>
+        <label for="i2c-scl">SCL GPIO<input id="i2c-scl" name="scl" type="number" min="0" max="33" step="1" value="22" required></label>
+        <button id="scan-i2c" class="install-button" type="submit" disabled>Apply pins &amp; scan</button>
+      </form>
+      <p id="i2c-status" role="status">Connect an ESP32 to scan for sensors.</p>
+      <p class="i2c-note">Classic ESP32: GPIO 0, 2, 4, 5, 12–19, 21–23, 25–27, 32, 33. Use pins available on your board; GPIO 0, 2, 5, 12 and 15 also affect boot. Expected sensor addresses: MPU6050 0x68 and VL53L0X 0x29. An address response alone does not identify a sensor.</p>
+    </dialog>
     <div class="section-heading"><h2>Telemetry overview</h2><span>Distance &amp; motion</span></div>
     <section class="card-1" aria-labelledby="distance-title">
       <div class="card-heading"><div><p class="eyebrow">01 / RANGE</p><h2 id="distance-title">Distance</h2></div><span class="tag">Auto-scaling range</span></div>
@@ -76,47 +94,8 @@
   <script src="js/distance.js"></script>
   <script type="module" src="js/orientation3d.js?v=reset-3"></script>
   <script src="js/sensorData.js"></script>
+  <script src="js/i2c.js"></script>
   <script src="js/app.js?v=reset-3"></script>
 </body>
-
-<script>
-window.esp32Port = null;
-
-const connectButton =
-    document.getElementById("connect-esp32");
-
-const usbStatus =
-    document.getElementById("usb-status");
-
-if (!("serial" in navigator)) {
-    connectButton.disabled = true;
-    usbStatus.textContent =
-        "Use desktop Chrome or Edge for USB connection";
-}
-
-connectButton.addEventListener("click", async () => {
-    try {
-        // Opens the browser's serial port selector
-        const port = await navigator.serial.requestPort();
-
-        // Save the selected port for Step 2
-        window.esp32Port = port;
-
-        usbStatus.textContent =
-            "ESP32 port selected — awaiting data setup";
-
-        connectButton.textContent = "Device Selected";
-
-    } catch (error) {
-        if (error.name === "NotFoundError") {
-            usbStatus.textContent =
-                "No device selected";
-        } else {
-            usbStatus.textContent =
-                "Connection error: " + error.message;
-        }
-    }
-});
-</script>
 
 </html>

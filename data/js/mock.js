@@ -8,6 +8,12 @@ let previousMockYaw = 0;
 
 let lastMockTime = Date.now();
 
+window.addEventListener("sensor-source-changed", () => {
+    lastMockTime = Date.now();
+    // Align the previous pose before returning from a long live session.
+    updateMockOrientation();
+});
+
 let mockData = {
     distance: 350,
     accelX: 0.12,

@@ -83,7 +83,6 @@ function startOrientation() {
 
 // Telemetry can start even if the external 3D modules load slowly or fail.
 async function startDashboard() {
-    await detectESP32();
     updateLoop();
 
     if (typeof window.setup3DScene === "function") {

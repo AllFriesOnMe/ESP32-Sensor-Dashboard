@@ -1,0 +1,163 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>USB telemetry regression checks</title>
+<link rel="stylesheet" href="../data/style.css">
+<button id="connect-esp32">Connect ESP32 (USB)</button>
+<span id="usb-status">No device selected</span>
+<div class="connection"><p id="data-source"></p><span class="refresh-note">Refresh interval · 250 ms</span></div><div id="distance-marker"></div>
+<button id="open-sensor-setup" type="button">Sensor setup</button>
+<dialog id="sensor-setup-dialog"><button id="close-sensor-setup" type="button">Close</button>
+<form id="i2c-form"><input id="i2c-sda" type="number" value="21"><input id="i2c-scl" type="number" value="22"><button id="scan-i2c" disabled>Scan</button></form>
+<p id="i2c-status"></p>
+</dialog>
+<pre id="results">RUNNING</pre>
+<script>
+// Exercise the real serial reader using browser streams, without USB hardware.
+const fakeSerial = new EventTarget();
+let selectedPort;
+fakeSerial.requestPort = async () => {
+    if (selectedPort instanceof Error) throw selectedPort;
+    return selectedPort;
+};
+Object.defineProperty(navigator, "serial", { value: fakeSerial, configurable: true });
+function getMockData() { return { mock: true }; }
+function makePort() {
+    let controller;
+    const port = new EventTarget();
+    port.readable = new ReadableStream({ start(value) { controller = value; } });
+    port.commands = [];
+    port.writable = new WritableStream({ write(bytes) { port.commands.push(new TextDecoder().decode(bytes)); } });
+    port.open = async options => { port.baudRate = options.baudRate; };
+    port.close = async () => { port.closed = true; };
+    port.send = text => controller.enqueue(new TextEncoder().encode(text));
+    port.end = () => controller.close();
+    return port;
+}
+</script>
+<script src="../data/js/sensorData.js"></script>
+<script src="../data/js/i2c.js"></script>
+<script>
+(async () => {
+    const results = [];
+    const tick = () => new Promise(resolve => setTimeout(resolve, 0));
+    function check(condition, label) {
+        if (!condition) throw new Error(label);
+        results.push("PASS " + label);
+    }
+    const sample = { distance: 350, accelX: 0, accelY: 0, accelZ: 1, gyroX: 2, gyroY: 3, gyroZ: 4 };
+    const line = JSON.stringify(sample);
+    try {
+        check(getSensorData().mock, "No device: mock data available");
+        function checkConnectionAlignment(label) {
+            const badge = document.getElementById('data-source').getBoundingClientRect();
+            const note = document.querySelector('.refresh-note').getBoundingClientRect();
+            check(Math.abs(note.top - badge.bottom - 8) < 0.5 && Math.abs(note.right - badge.right) < 0.5, label);
+        }
+        checkConnectionAlignment("Refresh note right-aligned eight pixels below mock badge");
+        sensorSetupButton.click();
+        check(sensorSetupDialog.open && scanButton.disabled, "Setup opens manually before connecting; scan stays disabled");
+        document.getElementById('close-sensor-setup').click();
+        check(!sensorSetupDialog.open, "Close dismisses setup dialog");
+        selectedPort = makePort();
+        connectButton.click();
+        await tick();
+        check(selectedPort.baudRate === 115200 && mockMode, "Port opens at 115200 and waits in mock mode");
+        check(sensorSetupDialog.open && !scanButton.disabled, "Setup automatically opens when port connects");
+        document.getElementById('close-sensor-setup').click();
+        sensorSetupButton.click();
+        check(sensorSetupDialog.open, "Setup can be reopened while connected");
+        document.getElementById('close-sensor-setup').click();
+        selectedPort.send('Booting\r\n{"distance":12}\n{"distance":"bad"}\n');
+        await tick();
+        check(mockMode, "Boot logs and invalid samples ignored");
+        selectedPort.send(line.slice(0, 20));
+        await tick();
+        check(mockMode, "Partial line does not activate live mode");
+        selectedPort.send(line.slice(20) + '\r\n');
+        await tick();
+        check(!mockMode && getSensorData().distance === 350, "Complete valid sample activates live mode");
+        checkConnectionAlignment("Refresh note alignment unchanged for connected badge");
+        check(selectedPort.commands.includes('STATUS\n'), "Connection requests active pin settings");
+        sdaInput.value = '6';
+        i2cForm.dispatchEvent(new Event('submit', { cancelable: true }));
+        check(!window.i2cScanPending && !selectedPort.commands.some(command => command.startsWith('SCAN')), "Flash GPIO rejected before sending");
+        sdaInput.value = '21';
+        sclInput.value = '21';
+        i2cForm.dispatchEvent(new Event('submit', { cancelable: true }));
+        check(!window.i2cScanPending, "Identical pins rejected");
+        sclInput.value = '22';
+        i2cForm.dispatchEvent(new Event('submit', { cancelable: true }));
+        await tick();
+        check(mockMode && scanButton.disabled && selectedPort.commands.includes('SCAN 21 22\n'), "Scan sends pins and keeps mock mode active");
+        selectedPort.send(line + '\n');
+        await tick();
+        check(mockMode, "Queued telemetry ignored while scan is pending");
+        selectedPort.send(JSON.stringify({ type: 'i2c_progress', message: 'Keep still' }) + '\n');
+        await tick();
+        check(scanStatus.textContent === 'Keep still', "Calibration progress displayed");
+        selectedPort.send(JSON.stringify({ type: 'i2c_status', sda: 21, scl: 22, ready: true, addresses: [41, 104], message: 'Sensors ready' }) + '\n');
+        await tick();
+        check(!window.i2cScanPending && !scanButton.disabled && scanStatus.textContent.includes('0x29, 0x68'), "Sensor scan lists addresses and releases controls");
+        selectedPort.send(line + '\n');
+        await tick();
+        check(!mockMode, "Valid readings resume live mode after scan");
+        check(scanStatus.textContent.includes('Live sensor readings are streaming') && !scanStatus.textContent.includes('waiting'), "Setup status updates when live readings arrive");
+        selectedPort.send(JSON.stringify({ type: 'i2c_status', sda: 21, scl: 22, ready: true, addresses: [41, 104], message: 'Sensors ready; waiting for a valid distance reading' }) + '\n');
+        await tick();
+        check(usbStatus.textContent === 'Receiving live sensor data' && scanStatus.textContent.includes('streaming') && !scanStatus.textContent.includes('waiting'), "Late firmware status cannot replace live state with waiting text");
+        selectedPort.send('{"distance":1e400,"accelX":0,"accelY":0,"accelZ":1,"gyroX":0,"gyroY":0,"gyroZ":0}\n');
+        await tick();
+        check(getSensorData().distance === 350, "Nonfinite values do not overwrite valid readings");
+        lastSampleTime = performance.now() - 2100;
+        check(getSensorData().mock, "Stale readings return to mock mode");
+        selectedPort.send(line + '\n');
+        await tick();
+        check(!mockMode, "Fresh samples recover live mode");
+        i2cForm.dispatchEvent(new Event('submit', { cancelable: true }));
+        await tick();
+        const removed = selectedPort;
+        const event = new Event('disconnect');
+        Object.defineProperty(event, 'target', { value: removed });
+        fakeSerial.dispatchEvent(event);
+        check(mockMode, "Disconnect immediately restores mock mode");
+        await tick();
+        check(removed.closed && !connectButton.disabled && !serialSession, "Disconnect releases reader and closes port");
+        check(!window.i2cScanPending && scanButton.disabled, "Disconnect cancels pending scan");
+        check(!sensorSetupDialog.open, "Disconnect does not reopen dismissed setup");
+        selectedPort = makePort();
+        connectButton.click();
+        await tick();
+        check(sensorSetupDialog.open, "Reconnection opens setup again");
+        document.getElementById('close-sensor-setup').click();
+        selectedPort.send('x'.repeat(3000));
+        await tick();
+        selectedPort.send('\n' + line + '\n' + line.replace('350', '351') + '\n');
+        await tick();
+        check(getSensorData().distance === 351, "Reconnect, oversized line recovery, multiple samples per chunk");
+        i2cForm.dispatchEvent(new Event('submit', { cancelable: true }));
+        await tick();
+        selectedPort.send(JSON.stringify({ type: 'i2c_status', sda: 25, scl: 26, ready: false, addresses: [], message: 'Expected sensors not found' }) + '\n');
+        await tick();
+        check(mockMode && !scanButton.disabled && scanStatus.textContent.includes('no devices found') && sdaInput.value === '25', "Failed scan reports missing devices and allows retry");
+        i2cForm.dispatchEvent(new Event('submit', { cancelable: true }));
+        await new Promise(resolve => setTimeout(resolve, 15010));
+        check(!window.i2cScanPending && scanStatus.textContent.includes('latest firmware'), "Old firmware scan timeout provides upgrade guidance");
+        selectedPort.end();
+        await tick();
+        check(mockMode && !connectButton.disabled, "End of stream restores mock mode");
+        selectedPort = Object.assign(new Error('cancelled'), { name: 'NotFoundError' });
+        connectButton.click();
+        await tick();
+        check(mockMode && usbStatus.textContent === 'No device selected' && !connectButton.disabled, "Cancelled selection preserves mock mode");
+        selectedPort = makePort();
+        selectedPort.open = async () => { throw new Error('busy'); };
+        connectButton.click();
+        await tick();
+        check(mockMode && !connectButton.disabled, "Open failure allows retry and preserves mock mode");
+        document.getElementById('results').textContent = results.join('\n') + '\nALL PASSED';
+    }
+    catch (error) {
+        document.getElementById('results').textContent = results.join('\n') + '\nFAIL ' + error.stack;
+    }
+})();
+</script>
