@@ -14,6 +14,10 @@
   <main class="dashboard">
     <header class="page-header">
       <div class="brand"><div><p class="eyebrow">ESP32 / SENSOR TELEMETRY</p><h1 id="esp32-title">Sensor dashboard</h1></div></div>
+      <div id="usb-connect-controls">
+        <button id="connect-esp32" type="button" aria-describedby="usb-status">Connect ESP32 (USB)</button>
+        <span id="usb-status" aria-live="polite">No device selected</span>
+      </div>
       <div class="connection"><p id="data-source" role="status">Checking data source...</p><span class="refresh-note">Refresh interval · 250 ms</span></div>
     </header>
     <div class="section-heading"><h2>Telemetry overview</h2><span>Distance &amp; motion</span></div>
@@ -74,4 +78,45 @@
   <script src="js/sensorData.js"></script>
   <script src="js/app.js?v=reset-3"></script>
 </body>
+
+<script>
+window.esp32Port = null;
+
+const connectButton =
+    document.getElementById("connect-esp32");
+
+const usbStatus =
+    document.getElementById("usb-status");
+
+if (!("serial" in navigator)) {
+    connectButton.disabled = true;
+    usbStatus.textContent =
+        "Use desktop Chrome or Edge for USB connection";
+}
+
+connectButton.addEventListener("click", async () => {
+    try {
+        // Opens the browser's serial port selector
+        const port = await navigator.serial.requestPort();
+
+        // Save the selected port for Step 2
+        window.esp32Port = port;
+
+        usbStatus.textContent =
+            "ESP32 port selected — awaiting data setup";
+
+        connectButton.textContent = "Device Selected";
+
+    } catch (error) {
+        if (error.name === "NotFoundError") {
+            usbStatus.textContent =
+                "No device selected";
+        } else {
+            usbStatus.textContent =
+                "Connection error: " + error.message;
+        }
+    }
+});
+</script>
+
 </html>
