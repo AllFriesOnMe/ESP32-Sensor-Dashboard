@@ -7,6 +7,10 @@ let renderer;
 let board;
 let modelRadius = 1.5;
 let targetQuaternion = new THREE.Quaternion();
+const sensorQuaternion = new THREE.Quaternion();
+const referenceInverse = new THREE.Quaternion();
+let hasOrientationSample = false;
+let resetPending = false;
 
 function setup3DScene() {
 
@@ -91,18 +95,41 @@ function setup3DScene() {
 
 function update3DOrientation(roll, pitch, yaw) {
 
-    // The model lies in X/Z, with Y normal to the PCB. Map sensor
-    // X/Y/Z to model X/Z/-Y: roll about X, pitch about Z, yaw about -Y.
+    // The model lies in X/Z, with Y normal to the PCB.
+    // Reverse the Z-axis tilt to match clockwise motion with pins on the left.
     // YZX preserves the sensor's yaw-pitch-roll composition order.
     const targetEuler = new THREE.Euler(
         THREE.MathUtils.degToRad(roll),
         THREE.MathUtils.degToRad(-yaw),
-        THREE.MathUtils.degToRad(pitch),
+        THREE.MathUtils.degToRad(-pitch),
         "YZX"
     );
 
-    targetQuaternion.setFromEuler(targetEuler);
+    sensorQuaternion.setFromEuler(targetEuler);
+    hasOrientationSample = true;
+    if (resetPending) {
+        referenceInverse.copy(sensorQuaternion).invert();
+        resetPending = false;
+        window.dispatchEvent(new Event("reset-motion-values"));
+    }
+    targetQuaternion.copy(referenceInverse).multiply(sensorQuaternion);
 }
+
+function resetPosition() {
+    // If telemetry has not arrived yet, zero the first available pose.
+    resetPending = !hasOrientationSample;
+    referenceInverse.copy(sensorQuaternion).invert();
+    targetQuaternion.identity();
+    if (board) board.quaternion.identity();
+
+    if (hasOrientationSample) {
+        window.dispatchEvent(new Event("reset-motion-values"));
+    }
+}
+
+const resetButton = document.getElementById("reset-position");
+resetButton.addEventListener("click", resetPosition);
+resetButton.disabled = false;
 
 function animate3D() {
 

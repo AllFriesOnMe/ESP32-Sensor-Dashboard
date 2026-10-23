@@ -39,14 +39,14 @@ function displayData(data) {
 
     updateGyroAngles(data);
 
-    document.getElementById("gyroRoll").innerHTML = gyroRoll.toFixed(2);
-    document.getElementById("gyroPitch").innerHTML = gyroPitch.toFixed(2);
-    document.getElementById("gyroYaw").innerHTML = gyroYaw.toFixed(2);
+    document.getElementById("gyroRoll").textContent = (gyroRoll - angleZero.gyroRoll).toFixed(2);
+    document.getElementById("gyroPitch").textContent = (gyroPitch - angleZero.gyroPitch).toFixed(2);
+    document.getElementById("gyroYaw").textContent = (gyroYaw - angleZero.gyroYaw).toFixed(2);
 
     updateFusedAngles(data);
 
-    document.getElementById("fusedRoll").innerHTML = fusedRoll.toFixed(2);
-    document.getElementById("fusedPitch").innerHTML = fusedPitch.toFixed(2);
+    document.getElementById("fusedRoll").textContent = (fusedRoll - angleZero.fusedRoll).toFixed(2);
+    document.getElementById("fusedPitch").textContent = (fusedPitch - angleZero.fusedPitch).toFixed(2);
 
     if (orientationReady) {
         window.update3DOrientation(fusedRoll, fusedPitch, gyroYaw);

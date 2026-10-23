@@ -9,6 +9,24 @@ let lastFusionTime = Date.now();
 
 let lastGyroTime = Date.now();
 
+const angleZero = {
+    gyroRoll: 0,
+    gyroPitch: 0,
+    gyroYaw: 0,
+    fusedRoll: 0,
+    fusedPitch: 0
+};
+
+window.addEventListener("reset-motion-values", () => {
+    Object.assign(angleZero, {
+        gyroRoll, gyroPitch, gyroYaw, fusedRoll, fusedPitch
+    });
+
+    for (const id of Object.keys(angleZero)) {
+        document.getElementById(id).textContent = "0.00";
+    }
+});
+
 function calculateAccelerationMagnitude(data) {
     let magnitude = Math.sqrt(
         data.accelX ** 2 + data.accelY ** 2 + data.accelZ ** 2

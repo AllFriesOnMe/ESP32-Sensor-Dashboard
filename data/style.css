@@ -36,6 +36,10 @@ h2 { font-size: 20px; font-weight: 600; letter-spacing: -.4px; margin: 0; }
 .card-3 { background: #f4eedb; border-color: #ded4b5; }
 .card-heading { align-items: flex-start; }
 .tag { border: 1px solid var(--border); border-radius: 5px; padding: 5px 8px; color: var(--muted); font-size: 10px; white-space: nowrap; }
+.reset-position { margin-top: 12px; padding: 8px 12px; border: 1px solid var(--border); border-radius: 5px; background: #f4f0f8; color: inherit; font: inherit; cursor: pointer; }
+.reset-position:hover:not(:disabled) { background: #e8e0f0; }
+.reset-position:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
+.reset-position:disabled { opacity: 0.5; cursor: default; }
 .card-1 { position: relative; overflow: hidden; margin-bottom: 20px; border-color: #c4d0b7; background: #e4ebd9; }
 .distance-reading { display: flex; align-items: baseline; gap: 12px; margin: 18px 0 24px; }
 #distance { font-size: 64px; line-height: 1; font-weight: 600; letter-spacing: -3px; font-variant-numeric: tabular-nums; color: var(--accent); }
