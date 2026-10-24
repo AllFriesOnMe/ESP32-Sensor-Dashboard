@@ -26,5 +26,3 @@ No Arduino IDE or PlatformIO installation required.
 
 ### Demo Mode
 If you do not have the hardware, the dashboard automatically runs in Mock Mode, generating simulated sensor readings.
-
-Hello
